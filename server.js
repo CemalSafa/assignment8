@@ -12,6 +12,20 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
 })
 
+app.get('/hello', (req, res) => {
+  res.type('text/plain')
+  res.send("Hello from CemalSafa's server")
+})
+
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain')
+  res.send('User-agent: *\nDisallow: /api/admin\n')
+})
+
+app.get('/old-page', (req, res) => {
+  res.redirect('/hello')
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`)
 })
