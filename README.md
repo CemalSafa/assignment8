@@ -1,18 +1,34 @@
+# Study Programme Information Server
+
+## Setup and Execution
+1. Clone this repository to your local machine.
+2. Run `npm install` to download and install the required dependencies.
+3. Start the development server by running `npm run dev` (or `npm start` for standard execution).
+4. Open your web browser and navigate to `http://localhost:3000`.
+
+## File Organization
+- `server.js`: The main Express server application containing the route definitions and middleware.
+- `package.json`: Contains project metadata, scripts, and list of dependencies.
+- `public/`: Directory containing all static frontend assets.
+  - `index.html`: The main web page structure.
+  - `styles.css`: Stylesheet for the web page.
+  - `app.js`: Frontend JavaScript responsible for fetching and displaying data from the API.
+
 ## Routes
 
-| Method and path | Behaviour |
-|---|---|
-| GET / | the page, public/index.html |
-| GET /hello | plain text |
-| GET /robots.txt | plain text file body |
-| GET /old-page | redirects to /hello |
-| GET /api/courses | JSON array of courses |
-| GET /api/status | status, nodeVersion and uptimeSeconds of the running process |
-| GET /api/headers | echoes the User-Agent and Accept headers |
-| POST /api/subscribe | 201 with `{ "subscribed": true }` |
-| GET /api/admin | 403 with `{ "error": "Forbidden" }` |
-| GET /api/stats | `{ "requestsServed": <number> }` |
-| anything else | 404 (JSON for paths starting with /api, text otherwise) |
+| Method and path | Behaviour | 
+| ----- | ----- | 
+| GET / | the page, public/index.html | 
+| GET /hello | plain text | 
+| GET /robots.txt | plain text file body | 
+| GET /old-page | redirects to /hello | 
+| GET /api/courses | JSON array of courses | 
+| GET /api/status | status, nodeVersion and uptimeSeconds of the running process | 
+| GET /api/headers | echoes the User-Agent and Accept headers | 
+| POST /api/subscribe | 201 with `{ "subscribed": true }` | 
+| GET /api/admin | 403 with `{ "error": "Forbidden" }` | 
+| GET /api/stats | `{ "requestsServed": <number> }` | 
+| anything else | 404 (JSON for paths starting with /api, text otherwise) | 
 
 ## Middleware
 
@@ -22,71 +38,126 @@ The request counter and logger middleware are placed at the very top of the appl
 
 ### Order of the middleware
 
-Middleware functions in Express execute sequentially in the exact order they are defined. 
-1. **Global Middleware (Logger, Counter, Parsers):** Registered first so they can process, log, or count the request before it reaches any route.
-2. **Specific Routes (`/hello`, `/api/...`):** Registered next. If a request matches the route path, it is processed here, and the response is sent (ending the request-response cycle).
-3. **Catch-all (404 Not Found):** Registered at the very bottom. If a request trickles down past all defined routes without finding a match, this final middleware catches it and returns the appropriate 404 error.
+Middleware functions in Express execute sequentially in the exact order they are defined.
+
+1. **Global Middleware (Logger, Counter):** Registered first so they can process, log, or count the request before it reaches any route.
+2. **Static Files (`express.static`):** Registered next to serve files from the `public` directory if the URL matches a filename.
+3. **Specific Routes (`/hello`, `/api/...`):** Registered after. If a request matches the route path, it is processed here, and the response is sent.
+4. **Catch-all (404 Not Found):** Registered at the very bottom. If a request trickles down past all defined routes and static files without finding a match, this final middleware catches it and returns the appropriate 404 error.
 
 ## Testing evidence (curl)
 
-**1. GET /api/courses**
-```bash
-$ curl -i http://localhost:3000/api/courses
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-Content-Length: 79
+### Successful JSON response
 
-[{"id":1,"name":"Control Engineering"},{"id":2,"name":"Software Engineering"}]
+```
+$ curl --include -X GET http://localhost:3000/api/courses
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 190
+ETag: W/"be-l2WtjrAzQmwTfP3R9Wx4Wz8LMKw"
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+[{"id":1,"title":"Introduction to Programming","credits":4},{"id":2,"title":"Object-Oriented Software Design","credits":4},{"id":3,"title":"Web Programming and Back-End Basics","credits":3}]
 ```
 
-**2. POST /api/subscribe**
-```bash
-$ curl -i -X POST http://localhost:3000/api/subscribe
+### 201 response
+
+```
+$ curl --include -X POST http://localhost:3000/api/subscribe
 HTTP/1.1 201 Created
+X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
-Content-Length: 21
+Content-Length: 19
+ETag: W/"13-oWAPIqDXuocNexKhPYW9ayyk98c"
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
 
 {"subscribed":true}
 ```
 
-**3. GET /api/admin**
-```bash
-$ curl -i http://localhost:3000/api/admin
+### 403 response
+
+```
+$ curl --include -X GET http://localhost:3000/api/admin
 HTTP/1.1 403 Forbidden
+X-Powered-By: Express
 Content-Type: application/json; charset=utf-8
 Content-Length: 21
+ETag: W/"15-TLNzmZqKxaTuFdX/dVWWPBu44/c"
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
 
 {"error":"Forbidden"}
 ```
 
-**4. 404 Handling (API vs Web)**
-```bash
-$ curl -i http://localhost:3000/api/unknown-endpoint
-HTTP/1.1 404 Not Found
-Content-Type: application/json; charset=utf-8
+### Redirect
 
-{"error":"Not Found"}
-
-$ curl -i http://localhost:3000/random-page
-HTTP/1.1 404 Not Found
+```
+$ curl --include -X GET http://localhost:3000/old-page
+HTTP/1.1 302 Found
+X-Powered-By: Express
+Location: /hello
+Vary: Accept
 Content-Type: text/plain; charset=utf-8
+Content-Length: 28
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
 
-404 - Page Not Found
+Found. Redirecting to /hello
+```
+
+### 404 response on an /api path
+
+```
+$ curl --include -X GET http://localhost:3000/api/nope
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 21
+ETag: W/"15-bm7tJgu8FHlq5QU+Y6gDxOGPfRc"
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"error":"Not found"}
+```
+
+### 404 response on a non-API path
+
+```
+$ curl --include -X GET http://localhost:3000/nope
+HTTP/1.1 404 Not Found
+X-Powered-By: Express
+Content-Type: text/plain; charset=utf-8
+Content-Length: 39
+ETag: W/"27-pMQB9cj83kIjS/YnQJ3PWlAOj0g"
+Date: Mon, 16 Nov 2026 18:35:41 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+404 Not Found: this page does not exist
 ```
 
 ## Reasoning questions
 
 ### 1. Route order
 
-**(Experiment):** If a catch-all route like `app.get('*', ...)` is placed before `app.get('/hello', ...)`, the generic `*` route will intercept the request first and end the cycle. The `/hello` route will become unreachable. Routes must always be ordered from most specific to least specific.
+**(Experiment):** If I move the catch-all 404 middleware `app.use((req, res) => { ... })` to the very top of `server.js` (above all other routes), every single request I make (whether it's `/`, `/hello`, or `/api/courses`) immediately returns a 404 error. The execution stops at the top because the middleware ends the cycle, and the valid routes below it are never reached.
 
 ### 2. Middleware
 
-**(Experiment):** If the request logger middleware is placed *after* the `GET /hello` route, any request to `/hello` will be fulfilled and terminated by `res.send()` before the execution flow ever reaches the logger. The logger will only fire for requests that fail to match the routes above it.
+**(Experiment):** If I remove the `next()` call from my logger middleware, the server terminal still prints the log message, but the browser just spins endlessly waiting for a response. When using `curl /hello`, the request hangs and eventually times out. Because there is no `next()` to pass control, and no `res.send()` to end the response, the request is left hanging in limbo.
 
 ### 3. Status codes
 
-Using correct HTTP status codes is crucial for API predictability. `201 Created` specifically tells the client that the POST request successfully resulted in a new resource (subscription). `403 Forbidden` clearly communicates an authorization failure for the admin route, whereas a `404` simply means the endpoint doesn't exist.
+Using correct HTTP status codes is crucial for API predictability. `201 Created` specifically tells the client that the POST request successfully resulted in a new resource (like a subscription), whereas 200 just means "OK". 
+When handling missing pages, returning a `404` instead of a `200` with an error body is required by HTTP semantics. If we return `200`, browsers and search engine bots will think the page loaded successfully, which can lead to caching false data or indexing error pages. A `404` correctly communicates the absence of the resource at the protocol level.
 
 ### 4. Configuration
 
@@ -94,11 +165,11 @@ Environment variables (like `process.env.PORT`) are used so the application can 
 
 ### 5. Dependencies
 
-Dependencies are managed in `package.json`. Standard `dependencies` (like `express`) are required for the application to run in a production environment. `devDependencies` (like `nodemon`) are only used for local development convenience and aren't installed on production servers to save space and improve security.
+The `node_modules` folder is not committed to Git because it is extremely large and contains thousands of files that can be easily regenerated. Committing it wastes repository space and can cause cross-platform issues (some native modules need to be built specifically for Windows/Mac/Linux). When someone clones this repository, they must run the `npm install` command in their terminal, which reads the `package.json` file and downloads the exact required dependencies fresh for their system.
 
 ### 6. Same origin
 
-The Same-Origin Policy is a browser security feature. If a frontend application is hosted on a different domain or port (e.g., `localhost:5173`) than this Express API (`localhost:3000`), the browser will block the frontend from reading the API's responses. To fix this, we would need to implement CORS (Cross-Origin Resource Sharing) middleware in Express.
+If I double-click `index.html` and open it directly from disk (using the `file:///...` protocol) instead of through the server, clicking the button to fetch courses will fail. The `fetch('/api/courses')` call tries to look for the API relative to the local file system (which doesn't exist). Even if we hardcode the URL to `http://localhost:3000`, the browser's Same-Origin Policy will block the request because a local `file://` script is not allowed to communicate with an `http://` server without explicit CORS permissions.
 
 ## Self-study notes
 
@@ -108,12 +179,14 @@ Express can access the global Node.js `process` object. I used `process.version`
 
 ### Sending a specific content type (robots.txt)
 
-When serving raw text for routes like `/robots.txt`, we can use `res.type('text/plain')` or explicitly set the header with `res.setHeader('Content-Type', 'text/plain')` before using `res.send()`. This ensures browsers and bots interpret it as a plain text file rather than HTML.
+When serving raw text for routes like `/robots.txt`, we can use `res.type('text/plain')` before using `res.send()`. This sets the `Content-Type` header and ensures browsers and bots interpret it as a plain text file rather than HTML.
 
 ### Showing JSON neatly in the page
 
-Using `res.json(data)` is highly efficient. It not only converts a JavaScript object into a JSON string using `JSON.stringify()`, but it also automatically sets the `Content-Type: application/json` HTTP header. This prompts browsers and tools like Postman to neatly format and syntax-highlight the response.
+To show the JSON neatly formatted on the HTML page, I used `JSON.stringify(data, null, 2)` inside `app.js` before inserting it into the `<pre>` tag. The `null` is for the replacer function (which we don't need), and the `2` specifies the number of spaces for indentation, which formats the raw JavaScript object into a highly readable, multi-line JSON string.
 
 ### Challenges I faced
 
-Differentiating the 404 response type based on the requested URL path. Since API clients expect JSON errors but web users expect text/HTML, I had to implement logic inside the final 404 middleware. I used `req.path.startsWith('/api/')` to check the URL and conditionally return `res.status(404).json(...)` for API endpoints, while falling back to `res.status(404).send(...)` for everything else.
+- Setting up the correct error messages for the 404 handling required checking the path (`req.path.startsWith('/api')`), which took some trial and error to get the exact string outputs expected by the assignment.
+- Testing the API returned 403 and 404 errors in the console, which I initially thought were bugs in my code, until I realized it was just the browser logging the expected HTTP error codes from my fetch requests.
+- Getting formatting right in the Markdown file for the README, particularly making sure the curl outputs were wrapped in code blocks properly.
