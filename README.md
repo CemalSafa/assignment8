@@ -1,7 +1,7 @@
 # Study Programme Information Server
 
 ## Setup and Execution
-1. Clone this repository to your local machine.
+1. Clone this repository to your local machine: `git clone https://github.com/CemalSafa/assignment8.git`, then go into the folder with `cd assignment8`.
 2. Run `npm install` to download and install the required dependencies.
 3. Start the development server by running `npm run dev` (or `npm start` for standard execution).
 4. Open your web browser and navigate to `http://localhost:3000`.
@@ -9,6 +9,9 @@
 ## File Organization
 - `server.js`: The main Express server application containing the route definitions and middleware.
 - `package.json`: Contains project metadata, scripts, and list of dependencies.
+- `package-lock.json`: Records the exact versions of the installed packages.
+- `.gitignore`: Keeps `node_modules/` and `.env` out of the repository.
+- `README.md`: This file.
 - `public/`: Directory containing all static frontend assets.
   - `index.html`: The main web page structure.
   - `styles.css`: Stylesheet for the web page.
@@ -156,7 +159,7 @@ Keep-Alive: timeout=5
 
 ### 3. Status codes
 
-Using correct HTTP status codes is crucial for API predictability. `201 Created` specifically tells the client that the POST request successfully resulted in a new resource (like a subscription), whereas 200 just means "OK". 
+`201 Created` specifically tells the client that the POST request successfully resulted in a new resource (like a subscription), whereas 200 just means "OK". 
 When handling missing pages, returning a `404` instead of a `200` with an error body is required by HTTP semantics. If we return `200`, browsers and search engine bots will think the page loaded successfully, which can lead to caching false data or indexing error pages. A `404` correctly communicates the absence of the resource at the protocol level.
 
 ### 4. Configuration
@@ -187,6 +190,8 @@ To show the JSON neatly formatted on the HTML page, I used `JSON.stringify(data,
 
 ### Challenges I faced
 
-- Setting up the correct error messages for the 404 handling required checking the path (`req.path.startsWith('/api')`), which took some trial and error to get the exact string outputs expected by the assignment.
 - Testing the API returned 403 and 404 errors in the console, which I initially thought were bugs in my code, until I realized it was just the browser logging the expected HTTP error codes from my fetch requests.
-- Getting formatting right in the Markdown file for the README, particularly making sure the curl outputs were wrapped in code blocks properly.
+- At first I thought the port would change when I started the server from a different folder. I learned that these are two separate tests: starting the server from another folder checks the file paths, and the port only changes when the `PORT` environment variable is set, for example `PORT=4000 node server.js`.
+- `git clone` failed with "destination path already exists" because a folder with the same name was already there, so I cloned the repository into a folder with a different name.
+- Pushing to GitHub needed my own account, so I removed the saved login and used a personal access token.
+- A shell loop that I used to collect the `curl` output had a variable called `path`. In zsh, `path` is tied to `PATH`, so `curl` and `cat` suddenly failed with "command not found". Renaming the variable fixed it.
