@@ -14,6 +14,23 @@ const COURSES = Object.freeze([
   Object.freeze({ code: 'CS308', title: 'Web Programming and Back-End Basics', credits: 3 })
 ])
 
+let requestCount = 0
+
+// Request Logger Middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString()
+  console.log(`[${timestamp}] ${req.method} ${req.url}`)
+  next()
+})
+
+// Request Counter Middleware
+// Counting rule: increments by 1 for every incoming HTTP request that reaches
+// the server before static files and route handlers run (including /api/stats).
+app.use((req, res, next) => {
+  requestCount += 1
+  next()
+})
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
 })
@@ -65,6 +82,13 @@ app.get('/api/admin', (req, res) => {
   res.status(403).json({
     error: 'Forbidden: You do not have permission to access /api/admin',
     status: 403
+  })
+})
+
+app.get('/api/stats', (req, res) => {
+  res.json({
+    totalRequests: requestCount,
+    countingRule: 'Counts every incoming HTTP request reaching the server before route handlers run (including /api/stats).'
   })
 })
 
