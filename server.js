@@ -92,6 +92,20 @@ app.get('/api/stats', (req, res) => {
   })
 })
 
+// 404 Fallback (Express 5 compatible — placed at the very bottom after all routes)
+app.use((req, res) => {
+  if (req.path === '/api' || req.path.startsWith('/api/')) {
+    res.status(404).json({
+      error: 'API route not found',
+      path: req.originalUrl,
+      status: 404
+    })
+    return
+  }
+
+  res.status(404).type('text/plain').send(`404 Not Found: No resource found at ${req.originalUrl}`)
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`)
 })
