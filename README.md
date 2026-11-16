@@ -192,6 +192,3 @@ To show the JSON neatly formatted on the HTML page, I used `JSON.stringify(data,
 
 - Testing the API returned 403 and 404 errors in the console, which I initially thought were bugs in my code, until I realized it was just the browser logging the expected HTTP error codes from my fetch requests.
 - At first I thought the port would change when I started the server from a different folder. I learned that these are two separate tests: starting the server from another folder checks the file paths, and the port only changes when the `PORT` environment variable is set, for example `PORT=4000 node server.js`.
-- `git clone` failed with "destination path already exists" because a folder with the same name was already there, so I cloned the repository into a folder with a different name.
-- Pushing to GitHub needed my own account, so I removed the saved login and used a personal access token.
-- A shell loop that I used to collect the `curl` output had a variable called `path`. In zsh, `path` is tied to `PATH`, so `curl` and `cat` suddenly failed with "command not found". Renaming the variable fixed it.
