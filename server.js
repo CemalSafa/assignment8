@@ -31,9 +31,9 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
-})
+// Static files: express.static serves everything in public/, and a request
+// for / is answered with public/index.html (the default file of a folder)
+app.use(express.static(PUBLIC_DIR))
 
 app.get('/hello', (req, res) => {
   res.type('text/plain')

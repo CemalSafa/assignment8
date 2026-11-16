@@ -2,10 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Information Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Programme Information Server</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <h1>Information Server</h1>
-    <p>The server is running.</p>
+    <main>
+      <h1>Study Programme Information Server</h1>
+      <p>
+        This small server belongs to a made-up study programme. It offers a
+        few routes that return JSON, errors and redirects, logs every request
+        it receives and counts how many requests it has served since it
+        started.
+      </p>
+      <p>Press a button to call a route and see the response below.</p>
+
+      <section class="buttons">
+        <button type="button" data-method="GET" data-path="/api/courses">
+          GET /api/courses
+        </button>
+        <button type="button" data-method="GET" data-path="/api/status">
+          GET /api/status
+        </button>
+        <button type="button" data-method="GET" data-path="/api/headers">
+          GET /api/headers
+        </button>
+        <button type="button" data-method="POST" data-path="/api/subscribe">
+          POST /api/subscribe
+        </button>
+        <button type="button" data-method="GET" data-path="/api/admin">
+          GET /api/admin
+        </button>
+        <button type="button" data-method="GET" data-path="/api/stats">
+          GET /api/stats
+        </button>
+        <button type="button" data-method="GET" data-path="/api/does-not-exist">
+          GET /api/does-not-exist
+        </button>
+      </section>
+
+      <h2>Response</h2>
+      <p id="status">Status: no request yet</p>
+      <pre id="output">Press a button to see the response body here.</pre>
+    </main>
   </body>
 </html>
