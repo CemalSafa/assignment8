@@ -54,6 +54,20 @@ app.get('/api/headers', (req, res) => {
   })
 })
 
+app.post('/api/subscribe', (req, res) => {
+  res.status(201).json({
+    message: 'Subscription created successfully',
+    status: 201
+  })
+})
+
+app.get('/api/admin', (req, res) => {
+  res.status(403).json({
+    error: 'Forbidden: You do not have permission to access /api/admin',
+    status: 403
+  })
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`)
 })
